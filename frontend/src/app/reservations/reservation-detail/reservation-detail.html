@@ -1,0 +1,79 @@
+<p class="back"><a routerLink="/reservations">← All reservations</a></p>
+
+@if (reservation.hasValue() && venue.hasValue()) {
+  @let r = reservation.value();
+  @let zone = venue.value().zone;
+  <header class="page-header title-row">
+    <h1>{{ r.title }}</h1>
+    <app-reservation-state [reservation]="r" />
+  </header>
+
+  @if (cancelMessage(); as message) {
+    <div
+      class="alert"
+      [class.alert-success]="message.kind === 'success'"
+      [class.alert-error]="message.kind === 'error'"
+      [attr.role]="message.kind === 'error' ? 'alert' : 'status'"
+    >
+      <p>{{ message.text }}</p>
+    </div>
+  }
+
+  <div class="card">
+    <dl class="details">
+      <dt>Room</dt>
+      <dd><a [routerLink]="['/rooms', r.roomId]">{{ r.roomName }}</a></dd>
+      <dt>Date</dt>
+      <dd>{{ formatDate(r.start, zone) }}</dd>
+      <dt>Time</dt>
+      <dd>{{ formatTime(r.start, zone) }}–{{ formatTime(r.end, zone) }} ({{ zone }})</dd>
+      <dt>Booked for</dt>
+      <dd>{{ r.personName }}</dd>
+      <dt>Reference</dt>
+      <dd>#{{ r.id }}</dd>
+      <dt>Created</dt>
+      <dd>{{ formatDateTime(r.createdAt, zone) }}</dd>
+      @if (r.cancelledAt) {
+        <dt>Cancelled</dt>
+        <dd>{{ formatDateTime(r.cancelledAt, zone) }}</dd>
+      }
+    </dl>
+
+    <div class="cancel-area">
+      @if (r.cancellable) {
+        <button type="button" class="danger" [disabled]="cancelling()" (click)="dialog()?.open()">
+          {{ cancelling() ? 'Cancelling…' : 'Cancel reservation' }}
+        </button>
+      } @else if (r.status === 'CANCELLED') {
+        <p class="muted">This reservation was cancelled and no longer blocks the room.</p>
+      } @else {
+        <p class="muted">This reservation has already started, so it can no longer be cancelled.</p>
+      }
+    </div>
+  </div>
+
+  <app-confirm-dialog
+    heading="Cancel this reservation?"
+    confirmLabel="Cancel reservation"
+    cancelLabel="Keep reservation"
+    (confirmed)="cancel()"
+  >
+    <p>
+      “{{ r.title }}” in {{ r.roomName }} on {{ formatDate(r.start, zone) }},
+      {{ formatTime(r.start, zone) }}–{{ formatTime(r.end, zone) }}. The record stays visible as
+      cancelled and the room becomes free for that time.
+    </p>
+  </app-confirm-dialog>
+} @else if (missing()) {
+  <div class="alert alert-warning" role="alert">
+    <p>Reservation #{{ reservationId() }} does not exist. It may have been removed by a demo data reset.</p>
+    <p><a routerLink="/reservations">See all reservations</a></p>
+  </div>
+} @else if (reservation.error()) {
+  <div class="alert alert-error" role="alert">
+    <p>The reservation could not be loaded.</p>
+    <button type="button" (click)="reservation.reload()">Try again</button>
+  </div>
+} @else {
+  <p class="muted" role="status">Loading reservation…</p>
+}

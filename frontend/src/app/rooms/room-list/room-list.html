@@ -1,0 +1,42 @@
+<header class="page-header">
+  <h1>Rooms</h1>
+  <p>Choose a room to see its schedule and book it. Each booking reserves the whole room.</p>
+</header>
+
+@if (reset() === 'done') {
+  <div class="alert alert-success" role="status">
+    <p>Demo data was reset. Sample reservations are dated relative to today.</p>
+  </div>
+}
+
+@if (rooms.hasValue()) {
+  @if (rooms.value().length === 0) {
+    <p class="muted">There are no rooms. Use “Reset demo data” below to restore the sample rooms.</p>
+  } @else {
+    <ul class="room-grid">
+      @for (room of rooms.value(); track room.id) {
+        <li class="card room-card">
+          <h2>
+            <a [routerLink]="['/rooms', room.id]">{{ room.name }}</a>
+          </h2>
+          <p class="muted">{{ room.location }}</p>
+          <p>Seats {{ room.capacity }}</p>
+          @if (room.equipment.length > 0) {
+            <ul class="tags" aria-label="Equipment">
+              @for (item of room.equipment; track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          }
+        </li>
+      }
+    </ul>
+  }
+} @else if (rooms.error()) {
+  <div class="alert alert-error" role="alert">
+    <p>Rooms could not be loaded.</p>
+    <button type="button" (click)="rooms.reload()">Try again</button>
+  </div>
+} @else {
+  <p class="muted" role="status">Loading rooms…</p>
+}

@@ -1,0 +1,20 @@
+.list-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.filter {
+  min-width: 10rem;
+}
+caption {
+  caption-side: bottom;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+}
+.when {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,29 @@
+.room-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+.room-card h2 {
+  margin-bottom: 0.1rem;
+}
+.room-card p {
+  margin: 0 0 0.35rem;
+}
+.tags {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.tags li {
+  font-size: 0.78rem;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: var(--hover);
+  color: var(--muted);
+}

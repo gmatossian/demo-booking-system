@@ -1,0 +1,33 @@
+<h2 id="schedule-heading">Schedule</h2>
+@if (date()) {
+  <p class="muted day">{{ formatCalendarDate(date()) }} · {{ zone() }}</p>
+}
+
+@if (schedule.hasValue()) {
+  @if (schedule.value().reservations.length === 0) {
+    <p>No bookings on this day.</p>
+  } @else {
+    <ul class="slots" aria-live="polite">
+      @for (reservation of schedule.value().reservations; track reservation.id) {
+        <li>
+          <span class="time">
+            {{ formatTime(reservation.start, zone()) }}–{{ formatTime(reservation.end, zone()) }}
+          </span>
+          <a [routerLink]="['/reservations', reservation.id]">{{ reservation.title }}</a>
+          <span class="muted who">{{ reservation.personName }}</span>
+        </li>
+      }
+    </ul>
+  }
+  @if (schedule.isLoading()) {
+    <p class="muted" role="status">Refreshing…</p>
+  }
+} @else if (schedule.error()) {
+  <div class="alert alert-error" role="alert">
+    <p>The schedule could not be loaded.</p>
+    <button type="button" (click)="reload()">Try again</button>
+  </div>
+} @else {
+  <p class="muted" role="status">Loading schedule…</p>
+}
+<p class="field-hint">Cancelled bookings are not shown and do not block the room.</p>

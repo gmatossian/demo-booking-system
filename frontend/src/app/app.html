@@ -1,0 +1,49 @@
+<a class="skip-link" href="#main">Skip to content</a>
+<p class="demo-banner" role="note">
+  <span class="demo-pill">Demo</span>
+  Fictional rooms, people and bookings. Choosing a name is not signing in. Not for real use.
+</p>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" routerLink="/rooms">
+      Room booking
+      @if (venue.hasValue()) {
+        <span class="brand-venue">{{ venue.value().name }}</span>
+      }
+    </a>
+    <nav aria-label="Main">
+      <a routerLink="/rooms" routerLinkActive="active">Rooms</a>
+      <a routerLink="/reservations" routerLinkActive="active">Reservations</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container" tabindex="-1">
+  @if (venue.error()) {
+    <div class="alert alert-error" role="alert">
+      <p>
+        The booking service could not be reached, so rooms and reservations cannot be shown. Start the
+        backend, then try again.
+      </p>
+      <button type="button" (click)="venue.reload()">Try again</button>
+    </div>
+  } @else if (venue.hasValue()) {
+    <router-outlet />
+  } @else {
+    <p class="muted" role="status">Loading…</p>
+  }
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    @if (venue.hasValue()) {
+      <span>
+        Times are venue time ({{ venue.value().zone }}). Bookable {{ venue.value().opensAt }}–{{
+          venue.value().closesAt
+        }}, up to {{ venue.value().bookingHorizonDays }} days ahead.
+      </span>
+    }
+    <app-reset-demo-data />
+  </div>
+</footer>

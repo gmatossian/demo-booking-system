@@ -1,0 +1,51 @@
+<p class="back"><a routerLink="/rooms">← All rooms</a></p>
+
+@if (room.hasValue() && venue.hasValue()) {
+  <header class="page-header">
+    <h1>{{ room.value().name }}</h1>
+    <p>
+      {{ room.value().location }} · Seats {{ room.value().capacity }}
+      @if (room.value().equipment.length > 0) {
+        · {{ room.value().equipment.join(', ') }}
+      }
+    </p>
+  </header>
+
+  <div class="room-layout">
+    <section class="card" aria-labelledby="book-heading">
+      <h2 id="book-heading">Book {{ room.value().name }}</h2>
+      @if (people.hasValue()) {
+        <app-booking-form
+          [room]="room.value()"
+          [people]="people.value()"
+          [venue]="venue.value()"
+          [(date)]="selectedDate"
+          (attempted)="refreshSchedule()"
+        />
+      } @else if (people.error()) {
+        <div class="alert alert-error" role="alert">
+          <p>The list of people could not be loaded, so bookings cannot be made.</p>
+          <button type="button" (click)="people.reload()">Try again</button>
+        </div>
+      } @else {
+        <p class="muted" role="status">Loading…</p>
+      }
+    </section>
+
+    <section class="card" aria-labelledby="schedule-heading">
+      <app-room-schedule [roomId]="id()" [date]="selectedDate()" [zone]="venue.value().zone" />
+    </section>
+  </div>
+} @else if (roomMissing()) {
+  <div class="alert alert-warning" role="alert">
+    <p>This room does not exist.</p>
+    <p><a routerLink="/rooms">See all rooms</a></p>
+  </div>
+} @else if (room.error()) {
+  <div class="alert alert-error" role="alert">
+    <p>The room could not be loaded.</p>
+    <button type="button" (click)="room.reload()">Try again</button>
+  </div>
+} @else {
+  <p class="muted" role="status">Loading room…</p>
+}

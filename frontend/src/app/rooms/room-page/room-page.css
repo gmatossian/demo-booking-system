@@ -1,0 +1,14 @@
+.back {
+  margin: 0 0 0.75rem;
+}
+.room-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 1rem;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .room-layout {
+    grid-template-columns: 1fr;
+  }
+}

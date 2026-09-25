@@ -1,0 +1,67 @@
+<header class="page-header list-header">
+  <div>
+    <h1>Reservations</h1>
+    <p>Every reservation is visible to everyone in this demo.</p>
+  </div>
+  <div class="filter">
+    <label for="reservation-view">Show</label>
+    <select id="reservation-view" (change)="changeView($any($event.target).value)">
+      @for (option of views; track option.value) {
+        <option [value]="option.value" [selected]="option.value === selected().value">
+          {{ option.label }}
+        </option>
+      }
+    </select>
+  </div>
+</header>
+
+@if (reservations.hasValue() && venue.hasValue()) {
+  @if (reservations.value().length === 0) {
+    <p class="card">{{ selected().empty }} <a routerLink="/rooms">Book a room</a>.</p>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <caption class="muted">
+          {{ reservations.value().length }} {{ selected().label.toLowerCase() }}
+          · times in {{ venue.value().zone }}
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">When</th>
+            <th scope="col">Room</th>
+            <th scope="col">Title</th>
+            <th scope="col">Booked for</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (reservation of reservations.value(); track reservation.id) {
+            <tr>
+              <td class="when">
+                {{ formatDate(reservation.start, venue.value().zone) }}<br />
+                <span class="muted">
+                  {{ formatTime(reservation.start, venue.value().zone) }}–{{
+                    formatTime(reservation.end, venue.value().zone)
+                  }}
+                </span>
+              </td>
+              <td>{{ reservation.roomName }}</td>
+              <td>
+                <a [routerLink]="['/reservations', reservation.id]">{{ reservation.title }}</a>
+              </td>
+              <td>{{ reservation.personName }}</td>
+              <td><app-reservation-state [reservation]="reservation" /></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+} @else if (reservations.error()) {
+  <div class="alert alert-error" role="alert">
+    <p>Reservations could not be loaded.</p>
+    <button type="button" (click)="reservations.reload()">Try again</button>
+  </div>
+} @else {
+  <p class="muted" role="status">Loading reservations…</p>
+}

@@ -1,0 +1,198 @@
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <div class="field">
+    <label for="booking-title">Title</label>
+    <input
+      id="booking-title"
+      formControlName="title"
+      maxlength="80"
+      autocomplete="off"
+      placeholder="e.g. Sprint planning"
+      [attr.aria-invalid]="errorsFor('title').length > 0"
+      aria-describedby="booking-title-errors"
+    />
+    <div id="booking-title-errors">
+      @for (message of errorsFor('title'); track message) {
+        <p class="field-error">{{ message }}</p>
+      }
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="booking-person">Booked for</label>
+    <select
+      id="booking-person"
+      formControlName="personId"
+      [attr.aria-invalid]="errorsFor('personId').length > 0"
+      aria-describedby="booking-person-hint booking-person-errors"
+    >
+      <option [ngValue]="null" disabled>Choose a person…</option>
+      @for (person of people(); track person.id) {
+        <option [ngValue]="person.id">{{ person.displayName }}</option>
+      }
+    </select>
+    <p id="booking-person-hint" class="field-hint">
+      Fictional people. Anyone can book or cancel for anyone; this is not a sign-in.
+    </p>
+    <div id="booking-person-errors">
+      @for (message of errorsFor('personId'); track message) {
+        <p class="field-error">{{ message }}</p>
+      }
+    </div>
+  </div>
+
+  <div class="time-row">
+    <div class="field">
+      <label for="booking-date">Date</label>
+      <input
+        id="booking-date"
+        type="date"
+        formControlName="date"
+        [min]="venue().today"
+        [max]="venue().lastBookableDate"
+        [attr.aria-invalid]="errorsFor('date').length > 0"
+        aria-describedby="booking-date-errors"
+      />
+      <div id="booking-date-errors">
+        @for (message of errorsFor('date'); track message) {
+          <p class="field-error">{{ message }}</p>
+        }
+      </div>
+    </div>
+    <div class="field">
+      <label for="booking-start">Start</label>
+      <select
+        id="booking-start"
+        formControlName="start"
+        [attr.aria-invalid]="errorsFor('start').length > 0"
+        aria-describedby="booking-start-errors"
+      >
+        <option value="" disabled>Choose…</option>
+        @for (time of startTimes(); track time) {
+          <option [value]="time">{{ time }}</option>
+        }
+      </select>
+      <div id="booking-start-errors">
+        @for (message of errorsFor('start'); track message) {
+          <p class="field-error">{{ message }}</p>
+        }
+      </div>
+    </div>
+    <div class="field">
+      <label for="booking-end">End</label>
+      <select
+        id="booking-end"
+        formControlName="end"
+        [attr.aria-invalid]="errorsFor('end').length > 0"
+        aria-describedby="booking-end-errors"
+      >
+        <option value="" disabled>Choose…</option>
+        @for (time of endTimes(); track time) {
+          <option [value]="time">{{ time }}</option>
+        }
+      </select>
+      <div id="booking-end-errors">
+        @for (message of errorsFor('end'); track message) {
+          <p class="field-error">{{ message }}</p>
+        }
+      </div>
+    </div>
+  </div>
+  <p class="field-hint times-hint">
+    Venue time ({{ venue().zone }}), {{ venue().opensAt }}–{{ venue().closesAt }} in
+    {{ venue().slotMinutes }}-minute steps.
+  </p>
+
+  <div class="actions">
+    <button type="submit" class="primary" [disabled]="submitting()">
+      {{ submitting() ? 'Booking…' : 'Book room' }}
+    </button>
+    <button type="button" (click)="checkAvailability()" [disabled]="submitting()">
+      Check availability
+    </button>
+  </div>
+</form>
+
+<div aria-live="polite">
+  @if (availability(); as check) {
+  @switch (check.kind) {
+    @case ('checking') {
+      <p class="muted">Checking…</p>
+    }
+    @case ('incomplete') {
+      <p class="muted">Choose a date, start and end time to check availability.</p>
+    }
+    @case ('free') {
+      <div class="alert alert-info">
+        <p>The room is free at that time right now. It is only reserved once you book it.</p>
+      </div>
+    }
+    @case ('busy') {
+      <div class="alert alert-warning">
+        <p>The room is already booked for part of that time:</p>
+        <ul>
+          @for (conflict of check.conflicts; track conflict.id) {
+            <li>
+              {{ formatTime(conflict.start, venue().zone) }}–{{ formatTime(conflict.end, venue().zone) }}
+              {{ conflict.title }}
+            </li>
+          }
+        </ul>
+      </div>
+    }
+    @case ('error') {
+      <div class="alert alert-error">
+        <p>Availability could not be checked. {{ check.message }}</p>
+      </div>
+    }
+  }
+  }
+
+  @if (outcome(); as result) {
+    @switch (result.kind) {
+      @case ('booked') {
+        <div class="alert alert-success" role="status">
+          <p>
+            Booked “{{ result.reservation.title }}” on
+            {{ formatDate(result.reservation.start, venue().zone) }},
+            {{ formatTime(result.reservation.start, venue().zone) }}–{{
+              formatTime(result.reservation.end, venue().zone)
+            }}.
+            <a [routerLink]="['/reservations', result.reservation.id]">View reservation</a>
+          </p>
+        </div>
+      }
+      @case ('conflict') {
+        <div class="alert alert-error" role="alert">
+          <p>Not booked: the room is already booked for part of that time.</p>
+          <ul>
+            @for (conflict of result.conflicts; track conflict.id) {
+              <li>
+                {{ formatTime(conflict.start, venue().zone) }}–{{
+                  formatTime(conflict.end, venue().zone)
+                }}
+                {{ conflict.title }} ({{ conflict.personName }})
+              </li>
+            }
+          </ul>
+          <p>Choose another time. Your entries have been kept.</p>
+        </div>
+      }
+      @case ('invalid') {
+        <div class="alert alert-error" role="alert">
+          <p>Not booked. {{ result.roomError || result.message }}</p>
+        </div>
+      }
+      @case ('uncertain') {
+        <div class="alert alert-error" role="alert">
+          <p>
+            We could not confirm whether this booking was saved. {{ result.message }}
+          </p>
+          <p>
+            Check the schedule or the <a routerLink="/reservations">reservations list</a> before trying
+            again, so you do not book twice.
+          </p>
+        </div>
+      }
+    }
+  }
+</div>

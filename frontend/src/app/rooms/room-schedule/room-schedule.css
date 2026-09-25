@@ -1,0 +1,24 @@
+.day {
+  margin: -0.5rem 0 0.75rem;
+  font-size: 0.9rem;
+}
+.slots {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+}
+.slots li {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  column-gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  grid-row: span 2;
+}
+.who {
+  font-size: 0.85rem;
+}
